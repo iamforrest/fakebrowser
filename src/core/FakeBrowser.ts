@@ -1,19 +1,19 @@
 // noinspection JSUnusedGlobalSymbols,JSUnusedLocalSymbols
 
 import * as path from 'path';
-import { strict as assert } from 'assert';
+import {strict as assert} from 'assert';
 
-import { Browser, CDPSession, Page, Target, WebWorker } from 'puppeteer';
-import { PuppeteerExtra } from 'puppeteer-extra';
+import {Browser, CDPSession, Page, Target, WebWorker} from 'puppeteer';
+import {PuppeteerExtra} from 'puppeteer-extra';
 
-import { UserAgentHelper } from './UserAgentHelper';
-import { PptrToolkit } from './PptrToolkit';
-import { ConnectParameters, DriverParameters, LaunchParameters } from './Driver.js';
-import { PptrPatcher } from './PptrPatcher';
-import { FakeUserAction } from './FakeUserAction';
-import { BrowserLauncher } from './BrowserLauncher';
-import { BrowserBuilder } from './BrowserBuilder';
-import { Touchscreen } from './TouchScreen';
+import {UserAgentHelper} from './UserAgentHelper';
+import {PptrToolkit} from './PptrToolkit';
+import {ConnectParameters, DriverParameters, LaunchParameters} from './Driver.js';
+import {PptrPatcher} from './PptrPatcher';
+import {FakeUserAction} from './FakeUserAction';
+import {BrowserLauncher} from './BrowserLauncher';
+import {BrowserBuilder} from './BrowserBuilder';
+import {Touchscreen} from './TouchScreen';
 
 export const kDefaultWindowsDD = require(path.resolve(__dirname, '../../device-hub-demo/Windows.json'))
 
@@ -267,8 +267,9 @@ export class FakeBrowser {
         }
 
         // cdp
+        const client = await page.target().createCDPSession();
         try {
-            await page['_client'].send('ServiceWorker.setForceUpdateOnPageLoad', {forceUpdateOnPageLoad: true})
+            await client.send('ServiceWorker.setForceUpdateOnPageLoad', {forceUpdateOnPageLoad: true})
         } catch (ex: any) {
             console.warn('CDP ServiceWorker.setForceUpdateOnPageLoad exception', ex)
         }
@@ -276,7 +277,7 @@ export class FakeBrowser {
         // touch
         if (this.isMobileBrowser) {
             try {
-                await page['_client'].send('Emulation.setEmitTouchEventsForMouse', {
+                await client.send('Emulation.setEmitTouchEventsForMouse', {
                     enabled: true,
                 })
             } catch (ex: any) {
@@ -284,7 +285,7 @@ export class FakeBrowser {
             }
 
             Object.defineProperty(page, '_patchTouchscreen', {
-                value: new Touchscreen(page['_client'], page.keyboard),
+                value: new Touchscreen(client, page.keyboard),
             })
         }
 
@@ -333,7 +334,7 @@ export class FakeBrowser {
         const pages = await this.vanillaBrowser.pages()
         if (pages.length > 0) {
             abandonedPageTargetIds.push(
-                ...pages.map(e => e.target()['_targetId']),
+                ...pages.map(e => (e.target() as any)['_targetId']),
             )
         }
 
@@ -346,7 +347,7 @@ export class FakeBrowser {
                     // Maybe browser is created based on connect, with different instances
                     // so can only compare TargetId
                     pages = pages.filter(
-                        e => !abandonedPageTargetIds.includes(e.target()['_targetId']),
+                        e => !abandonedPageTargetIds.includes((e.target() as any)['_targetId']),
                     )
 
                     return pages

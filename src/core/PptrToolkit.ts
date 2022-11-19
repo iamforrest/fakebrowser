@@ -72,7 +72,8 @@ export class PptrToolkit {
 
     static async stopLoading(page: Page) {
         try {
-            await page['_client'].send('Page.stopLoading')
+            const client = await page.target().createCDPSession();
+            await client.send('Page.stopLoading')
         } catch (ex: any) {
         }
 
@@ -91,9 +92,12 @@ export class PptrToolkit {
         height: number,
     } | null> {
         try {
-            const {model} = await eh._client.send('DOM.getBoxModel', {
-                objectId: eh._remoteObject.objectId,
+            const contentFrame = await eh.contentFrame();
+            const client = await contentFrame?.page().target().createCDPSession();
+            const response = await client?.send('DOM.getBoxModel', {
+                objectId: eh.remoteObject().objectId,
             })
+            const model = response?.model;
 
             if (!model) {
                 return null
@@ -167,8 +171,8 @@ export class PptrToolkit {
         while (new Date().getTime() - start < timeout) {
             const pages = await Promise.all(
                 browser.targets()
-                  .filter((target) => target.type() === 'page')
-                  .map((target) => target.page())
+                    .filter((target) => target.type() === 'page')
+                    .map((target) => target.page())
             );
             const arr = []
 

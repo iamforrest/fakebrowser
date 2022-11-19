@@ -1,6 +1,6 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {CDPSession, Keyboard, MouseButton, MouseOptions, Point} from 'puppeteer'
+import {CDPSession, MouseButton, MouseOptions, Point} from 'puppeteer'
 
 export class Touchscreen {
     private _x: number = 0
@@ -9,7 +9,7 @@ export class Touchscreen {
 
     constructor(
         private readonly client: CDPSession,
-        private readonly keyboard: Keyboard,
+        private readonly keyboard: any,
     ) {
     }
 

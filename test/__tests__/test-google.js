@@ -1,4 +1,3 @@
-const vanillaBrowser = require('puppeteer');
 const timeout = 30000;
 
 describe(
